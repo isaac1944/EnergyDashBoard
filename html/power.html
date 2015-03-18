@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Power Viewer</title>
+
+    <link href="../vendor/css/bootstrap.css" rel="stylesheet"/>
+    <link href="../vendor/css/font-awesome.css" rel="stylesheet"/>
+    <link href="../vendor/css/dc.css" rel="stylesheet"/>
+    <link href="../css/style.css" rel="stylesheet"/>
+    
+    <script src="../vendor/js/queue.js"></script>
+    <script src="../vendor/js/underscore.js"></script>
+    <script src="../vendor/js/crossfilter.js"></script>
+    <script src="../vendor/js/d3.js"></script>
+    <script src="../vendor/js/dc.js"></script>
+    <script src="../vendor/js/reductio.min.js"></script>
+    <script src="../vendor/js/colorbrewer.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="../vendor/js/bootstrap.min.js"></script>
+    
+  </head>
+
+  <body>
+   
+  <div class="container">
+      
+
+    <div class="row">
+      <div class="col-md-12">
+        <div class="panel panel-green">
+          <div class="panel-heading">
+            Dashboard
+          </div>
+          <div class="panel-body">
+            <div id='date_chart' class='dc-chart'>
+              <h4>Energy Profile
+              <span>
+                <a class='reset' style='display:none' href="javascript:date_chart.filterAll();dc.redrawAll()">reset</a>
+              </span>
+                </h4>
+              
+            </div>
+            <div id='site_demand_chart' class='dc-chart'>
+              <h4>
+                  Site Selector
+                  <span>
+                    <a class='reset' style='display:none' href="javascript:site_demand_chart.filterAll();dc.redrawAll()">reset</a>
+                  </span>
+                </h4>
+            </div>
+              
+            <div id='site_pie_chart' class='dc-chart'>
+              <h4>Total Energy Percentage
+                <span>
+                  <a class='reset' style='display:none' href="javascript:pie_chart.filterAll();dc.redrawAll()">reset</a>
+                </span>
+              </h4>
+
+            </div>
+              
+            <div class="panel-body panel-collapse collapse in" id="collapse1">
+              <div id='power_factor_chart' class='dc-chart'>
+                <h4>Load Factor
+                  <span>
+                    <a class='reset' style='display:none' href="javascript:power_factor_chart.filterAll();dc.redrawAll()">reset</a>
+                  </span>
+                </h4>                
+              </div>
+          </div>
+              
+              <div id='date_chart' class='dc-chart'>
+              <table id='summary_table_table' class="table table-hover dc-data-table">
+                <thead>
+                  <tr class='header'>
+                      <th>Site Name</th>
+                      <th>Total Energy (Wh)</th>
+                      <th>Peak Demand (VA)</th>
+                      <th>Has Alarms</th>
+                  </tr>
+              </thead>
+              </table>
+            </div>
+        </div>
+      </div>
+        
+        
+        
+    </div>
+
+
+    
+      
+
+      
+    
+    <div>
+        <a id="showHideAdvanced" data-toggle="collapse" data-target=".advanced">Show / Hide Details</a>
+    </div>
+      
+    <div class='row advanced'>
+        
+      <div class="col-md-6 dc-chart">
+        <div class="panel panel-green">
+          <div class="panel-heading">
+            Daily Energy / Demand
+          </div>
+          <div class="panel-body">
+            <div id='energy_daily_chart' class='dc-chart'>
+              <legend>
+                <a class='reset' style='display:none' href="javascript:energy_daily_chart.filterAll();dc.redrawAll()">reset</a>
+              </legend>
+            </div>
+          </div>
+        </div>
+      </div>
+        
+      <div class="col-md-6 dc-chart">
+        <div class="panel panel-green">
+          <div class="panel-heading">
+            Hourly Energy / Demand
+          </div>
+          <div class="panel-body">
+            <div id='energy_hourly_chart' class='dc-chart'>
+              <legend>
+                <a class='reset' style='display:none' href="javascript:energy_hourly_chart.filterAll();dc.redrawAll()">reset</a>
+              </legend>
+            </div>
+          </div>
+        </div>
+      </div> 
+        
+    </div>
+
+      
+    <div class='row advanced'>
+      <div class="col-md-6 dc-chart">
+        <div class="panel panel-green">
+          <div class="panel-heading">
+            Energy Used
+          </div>
+          <div class="panel-body">
+            <div id='energy_used_chart' class='dc-chart'>
+              <legend>
+                <a class='reset' style='display:none' href="javascript:energy_used_chart.filterAll();dc.redrawAll()">reset</a>
+              </legend>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6 dc-chart">
+          <div class="panel panel-green">
+            <div class="panel-heading">
+              Demand Used
+            </div>
+            <div class="panel-body">
+              <div id='demand_chart' class='dc-chart'>
+                <legend>
+                  <a class='reset' style='display:none' href="javascript:demand_chart.filterAll();dc.redrawAll()">reset</a>
+                </legend>
+              </div>
+            </div>
+          </div>
+        </div>
+    </div>
+
+
+      
+  </div>
+
+      
+   
+  
+  </div>
+
+    <script src="../js/power.js"></script>
+  </body>
+</html>
+
+<script type="text/javascript" language="JavaScript">
+  $("#showHideAdvanced").click();
+    $("#showHideAdvanced").click();
+</script>
