@@ -20,13 +20,11 @@
     <script src="../vendor/js/colorbrewer.js"></script>
     <script src="../vendor/js/jquery-1.6.2.js"></script>
 <!--    <script src="../vendor/js/bootstrap.min.js"></script>-->
-    
   </head>
 
   <body>
    
   <div class="container">
-      
 
     <div class="row">
       <div class="col-md-12">
@@ -36,12 +34,17 @@
           </div>
           <div class="panel-body">
             <div id='date_chart' class='dc-chart'>
-              <h4>Energy Profile
-              <span>
-                <a class='reset' style='display:none' href="javascript:date_chart.filterAll();dc.redrawAll()">Clear Selection</a>
-              </span>
-                </h4>
-              
+              <h4>Show 
+              <select name="uom" id="uom">
+                <option name='Wh' value="energy_used">Total Energy</option>
+                <option name='VA' value="demand">Demand</option>
+                <option name='varh' value="reactive_energy_used">Reactive Energy</option>
+              </select> Profile
+ 
+                <span>
+                  <a class='reset' style='display:none' href="javascript:date_chart.filterAll();dc.redrawAll()">Clear Selection</a>
+                </span>
+              </h4>
             </div>
             <div id='site_demand_chart' class='dc-chart'>
               <h4>
@@ -86,15 +89,9 @@
         </div>
       </div>
         
-        
-        
     </div>
 
 
-    
-      
-
-      
     
     <div>
         <a id="showHideAdvanced">Show / Hide Details</a>
@@ -133,7 +130,6 @@
       </div> 
         
     </div>
-
       
     <div class='row advanced' style="display: none">
       <div class="col-md-6 dc-chart">
@@ -167,22 +163,26 @@
         </div>
     </div>
 
-
-      
   </div>
 
-      
-   
   
-  </div>
+ </div>
 
-    <script src="../js/power.js"></script>
-  </body>
+<script src="../js/power.js"></script>
+
+</body>
 </html>
 
 <script type="text/javascript" language="JavaScript">
     
   $('#showHideAdvanced').click (function() {
    $('.advanced').toggle();   
+  })
+  
+  $('#uom').change(function () {
+    var selected_uom = $(this).find('option:selected');
+    site_date_energy_group = site_date.group().reduceSum(_.property(selected_uom.val()));  
+      date_chart.yAxisLabel(selected_uom.attr('name'));
+      dc.redrawAll();
   })
 </script>

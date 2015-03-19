@@ -142,15 +142,9 @@ function showCharts(error, results) {
     .yAxisLabel('Wh')
     .xAxisLabel('Date / Time')
     //.legend(dc.legend().x(970).y(10).itemHeight(13).gap(5))
-    
   
   date_chart.yAxis().tickFormat(d3.format('s'));
   
-    
-  date_energy_chart = dc.lineChart(date_chart)
-    .group(date_energy_group, 'energy')
-    .colors('green');
-    
   var siteSeries = site_name.group().all().map(function(d,fi) {
     var _siteName = d.key;
     var group_per_site = 
@@ -192,7 +186,7 @@ function showCharts(error, results) {
     
     date_chart.compose(siteSeries.concat(alarmSeries));
     
-  //////////////////////////// Peak Demand Chart /////////////////////////////
+  //////////////////////////// Site Selector /////////////////////////////
   site_demand_chart = dc.rowChart('#site_demand_chart')
       .height(300)
       .width(280)
