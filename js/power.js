@@ -44,6 +44,7 @@
 
 // times in the data file are in the form of - Sun 22 Feb 2015 00:30
 time_format = d3.time.format('%a %d %b %Y %H:%M')
+//time_format = d3.time.format('%d/%m/%Y %H:%M')
 
 function process(d) {
   d.date = time_format.parse(d.date);
@@ -62,11 +63,13 @@ var data
 // the main event, load the data, build the charts!!!
 queue()
   .defer(d3.tsv, '../data/power.tsv') // load and parse power.tsv
+//.defer(d3.tsv, '../data/big.tsv') // load and parse power.tsv
   .await(showCharts) // then show the chart
 
 function showCharts(error, results) {
     
-  colorPallete = colorbrewer.Paired[9];       
+  colorPallete = colorbrewer.Set3[9];     
+  colorDomain = [0, 8];
   data = results; // move scope, so we can debug in console.
   
   _.forEach(data, process); // clean up the data - parse dates for instance
@@ -74,22 +77,27 @@ function showCharts(error, results) {
   //console.log(data)
   
   ndx = crossfilter(data);
-  energy_total = ndx.groupAll().reduceSum(function(d) {return d.energy_used;}).value() 
+  energy_total = ndx.groupAll().reduceSum(function(d) {return d.energy_used;}); 
   overall_max_demand = reductio().max(function (d) { return +d.demand; })(ndx.groupAll()).value();
-  overall_max_energy = reductio().max(function (d) { return +d.energy_used; })(ndx.groupAll()).value();
-
+  
+  
+  reducer = reductio()
+  overall_max_dimension = ndx.dimension(_.property('site_name'));
+  
+  
   date = ndx.dimension(_.property('date'));  
   date_energy_group = date.group().reduceSum(_.property('energy_used'));
   date_demand_group = date.group().reduceSum(_.property('demand'));
   
   site_name = ndx.dimension(_.property('site_name'));
+
+    
   site_group = site_name.group().reduceSum(_.property('energy_used'));
   site_demand = ndx.dimension(_.property('site_name'));  // Has to be on its own dimension for filter to work
   site_demand_group = reductio().max(function (d) { return +d.demand; }).sum(function (d) { return +d.energy_used; })(site_demand.group());
   
-    
-  site_date = ndx.dimension(function(d) { return [new Date(d.date).getTime(), d.site_name, d.alarms];})  // TODO: Not sure how this ordering work....
-  site_date_energy_group = site_date.group().reduceSum(_.property('energy_used')).order(function(d) {return new Date().getTime()});
+  site_date = ndx.dimension(function(d) { return [new Date(d.date).getTime(), d.site_name, d.alarms];})  // Must construct new Date, as it relies on natual odering
+  site_date_energy_group = site_date.group().reduceSum(_.property('energy_used'));
   
   
   energy_used = ndx.dimension(_.property('energy_used_bin'));
@@ -127,6 +135,7 @@ function showCharts(error, results) {
   date_chart = dc.compositeChart('#date_chart')
     .height(300)
     .width(950)
+    .dimension(date)  // required for date filter to work
     .elasticY(true)
     .x(d3.time.scale().domain(date_domain))
     .transitionDuration(300)
@@ -137,6 +146,11 @@ function showCharts(error, results) {
   
   date_chart.yAxis().tickFormat(d3.format('s'));
   
+    
+  date_energy_chart = dc.lineChart(date_chart)
+    .group(date_energy_group, 'energy')
+    .colors('green');
+    
   var siteSeries = site_name.group().all().map(function(d,fi) {
     var _siteName = d.key;
     var group_per_site = 
@@ -147,13 +161,12 @@ function showCharts(error, results) {
                                 }}
                , _siteName)
         .colors(colorPallete)
-        .colorDomain([0, 6])
+        .colorDomain(colorDomain)
         .colorAccessor(function(){return fi;})        
-        .keyAccessor(function(d) {return new Date(d.key[0]);});
+        .keyAccessor(function(d) {return d.key[0];});
 
       return group_per_site;
   });
-    
     
   var symbolScale = d3.scale.ordinal().range(d3.svg.symbolTypes);
   var symbolAccessor = function(d) { return symbolScale(d.key[0]); };  
@@ -171,14 +184,13 @@ function showCharts(error, results) {
         .colors(colorbrewer.Dark2[8])  // must use other colors, 
         .colorDomain([0, 6])
         .colorAccessor(function(){return fi;})        
-        .keyAccessor(function(d) {return new Date(d.key[0]);})
+        .keyAccessor(function(d) {return d.key[0];})
         .valueAccessor(function(d) {return d.value;});
       return group_per_site;
   });
     
     
-
-  date_chart.compose(siteSeries.concat(alarmSeries));
+    date_chart.compose(siteSeries.concat(alarmSeries));
     
   //////////////////////////// Peak Demand Chart /////////////////////////////
   site_demand_chart = dc.rowChart('#site_demand_chart')
@@ -188,7 +200,7 @@ function showCharts(error, results) {
       .group(site_group)
       .transitionDuration(300)
       .colors(colorPallete) // (optional) define color function or array for bubbles
-      .colorDomain([0, 6])
+      .colorDomain(colorDomain)
       .colorAccessor(function(d, fi) {return fi})
       //.valueAccessor(function(d) {return d.value.max})
       .valueAccessor(function(d) {return 1})
@@ -205,7 +217,7 @@ function showCharts(error, results) {
         .dimension(site_demand)
         .group(site_demand_group)
         .colors(colorPallete)
-        .colorDomain([0, 6])
+        .colorDomain(colorDomain)
         .colorAccessor(function(d, fi) {return fi})
         .valueAccessor(function (d) {return d.value.sum;})
         .label(function (d) {
@@ -214,7 +226,7 @@ function showCharts(error, results) {
             }
             var label = d.key;
             if (energy_total) {
-                label = Math.floor(d.value.sum / energy_total * 100) + '%';
+                label = Math.round(d.value.sum / energy_total.value() * 100) + '%';
             }
             return label;
         })
@@ -241,6 +253,8 @@ function showCharts(error, results) {
     .transitionDuration(300)
     .elasticY(true)
     .x(d3.scale.linear().domain(energy_used_domain))
+    .xAxisLabel("Wh")    
+    .yAxisLabel("# Occurance") 
 
   energy_used_chart.xAxis().tickFormat(d3.format('s'));
 
@@ -259,6 +273,8 @@ function showCharts(error, results) {
     .transitionDuration(300)
     .elasticY(true)
     .x(d3.scale.linear().domain(demand_domain))
+    .xAxisLabel("VA")    
+    .yAxisLabel("# Occurance") 
   
   demand_chart.xAxis().tickFormat(d3.format('s'));
   
@@ -285,16 +301,20 @@ function showCharts(error, results) {
     .elasticY(true)
     .x(d3.scale.linear().domain([0,7]))
     .renderHorizontalGridLines(true)
-  
+    .xAxisLabel("Day of Week")    
+    .yAxisLabel("Wh") 
+    .rightYAxisLabel("VA")
+
     energy_daily_bar_plot = dc.barChart(energy_daily_chart)
     .valueAccessor(function(d) {return d.value.sum})
     .group(energy_day_of_week_group)
     .colors('green')
+
     
     demand_daily_line_plot = dc.lineChart(energy_daily_chart)
     .valueAccessor(function(d) {return d.value.max})
     .group(demand_day_of_week_group)
-    .colors('black')
+    .colors('#6E257A')
     .useRightYAxis(true)
     
   energy_daily_chart.compose([energy_daily_bar_plot, demand_daily_line_plot]);  
@@ -308,7 +328,10 @@ function showCharts(error, results) {
     .transitionDuration(300)
     .elasticY(true)
     .x(d3.scale.linear().domain([0,24]))  
-  
+    .xAxisLabel("Hour of Day")    
+    .yAxisLabel("Wh") 
+    .rightYAxisLabel("VA")
+
     energy_hourly_bar_plot = dc.barChart(energy_hourly_chart)
     .valueAccessor(function(d) {return d.value.sum})
     .group(energy_hour_of_day_group)
@@ -317,7 +340,7 @@ function showCharts(error, results) {
     demand_hourly_line_plot = dc.lineChart(energy_hourly_chart)
     .valueAccessor(function(d) {return d.value.max})
     .group(demand_hour_of_day_group)
-    .colors('black')
+    .colors('#6E257A')
     .useRightYAxis(true)
     
   energy_hourly_chart.compose([energy_hourly_bar_plot, demand_hourly_line_plot]);    
@@ -336,21 +359,47 @@ function showCharts(error, results) {
     tableDimension.bottom = dimension_top_override
     tableDimension.top = dimension_top_override
     
+//    overall_max_energy = tableDimension.group()
+//    reducer.value('energy_used').max(function (d) {return +d.energy_used; });
+//    reducer(overall_max_energy)
+//  
  
     dc.dataTable('#summary_table_table')
         .dimension(tableDimension)
         .group(function(d) { return ''})
         .columns([
-            function(d) { return d.site_name; },
-            function(d) { return d.energy_used.toFixed(2); },
             function(d) { 
-                if (d.demand >= overall_max_demand.max)
-                    return '<span style="color: red">' + d.demand + '</span>';
-                else
-                    return d.demand; 
+                if (d.demand)
+                  return d.site_name; 
+                else return '&nbsp';},
+            function(d) { 
+                if (d.energy_used.toFixed(2) > 0)
+                  return d.energy_used.toFixed(2);
+                //return '<div style="width:' + d.energy_used/overall_max_energy.max + '%; background-color: #5cb85c">' + d.energy_used.toFixed(2) + '</div>'; 
             },
-            function(d) { return d.alarms > 1 ? 'Yes' : 'No'; }  // TODO: Fix is properly
-        ])       .width(800);
+            function(d) { 
+                if (d.demand)
+                  return '<div style="width:' + d.demand * 100/overall_max_demand.max + '%; background-color: #DB72ED">' + d.demand + '</div>'; 
+//                if (d.demand >= overall_max_demand.max)
+//                    return '<span style="color: red">' + d.demand + '</span>';
+//                else
+//                    return d.demand; 
+            },
+            function(d) { 
+                if (d.demand)
+                  return d.alarms > 1 ? 'Yes' : 'No'; }  // TODO: Fix is properly
+        ]).width(800)
+        .sortBy(function (d) {
+            return d.site_name;
+        })
+        .renderlet(function (table) {
+        $('.dc-table-row td:first-child').each(function(i) {
+          if ($.trim($(this).text()).length > 0) {
+            $(this).css('background-color', colorPallete[i]);
+          }
+        })
+
+        });;
     
   ///////////////// Bubble Chart ///////////////////////////////
   power_factor_chart = dc.bubbleChart('#power_factor_chart')

@@ -18,8 +18,8 @@
     <script src="../vendor/js/dc.js"></script>
     <script src="../vendor/js/reductio.min.js"></script>
     <script src="../vendor/js/colorbrewer.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-    <script src="../vendor/js/bootstrap.min.js"></script>
+    <script src="../vendor/js/jquery-1.6.2.js"></script>
+<!--    <script src="../vendor/js/bootstrap.min.js"></script>-->
     
   </head>
 
@@ -38,16 +38,16 @@
             <div id='date_chart' class='dc-chart'>
               <h4>Energy Profile
               <span>
-                <a class='reset' style='display:none' href="javascript:date_chart.filterAll();dc.redrawAll()">reset</a>
+                <a class='reset' style='display:none' href="javascript:date_chart.filterAll();dc.redrawAll()">Clear Selection</a>
               </span>
                 </h4>
               
             </div>
             <div id='site_demand_chart' class='dc-chart'>
               <h4>
-                  Site Selector
+                  Select Site(s)
                   <span>
-                    <a class='reset' style='display:none' href="javascript:site_demand_chart.filterAll();dc.redrawAll()">reset</a>
+                    <a class='reset' style='display:none' href="javascript:site_demand_chart.filterAll();dc.redrawAll()">Clear Selection</a>
                   </span>
                 </h4>
             </div>
@@ -55,7 +55,7 @@
             <div id='site_pie_chart' class='dc-chart'>
               <h4>Total Energy Percentage
                 <span>
-                  <a class='reset' style='display:none' href="javascript:pie_chart.filterAll();dc.redrawAll()">reset</a>
+                  <a class='reset' style='display:none' href="javascript:pie_chart.filterAll();dc.redrawAll()">Clear Selection</a>
                 </span>
               </h4>
 
@@ -63,9 +63,9 @@
               
             <div class="panel-body panel-collapse collapse in" id="collapse1">
               <div id='power_factor_chart' class='dc-chart'>
-                <h4>Load Factor
+                <h4>Energy vs Demand
                   <span>
-                    <a class='reset' style='display:none' href="javascript:power_factor_chart.filterAll();dc.redrawAll()">reset</a>
+                    <a class='reset' style='display:none' href="javascript:power_factor_chart.filterAll();dc.redrawAll()">Clear Selection</a>
                   </span>
                 </h4>                
               </div>
@@ -97,15 +97,15 @@
       
     
     <div>
-        <a id="showHideAdvanced" data-toggle="collapse" data-target=".advanced">Show / Hide Details</a>
+        <a id="showHideAdvanced">Show / Hide Details</a>
     </div>
       
-    <div class='row advanced'>
+    <div class='row advanced' style="display: none">
         
       <div class="col-md-6 dc-chart">
         <div class="panel panel-green">
           <div class="panel-heading">
-            Daily Energy / Demand
+            Daily Energy & Peak Demand
           </div>
           <div class="panel-body">
             <div id='energy_daily_chart' class='dc-chart'>
@@ -120,7 +120,7 @@
       <div class="col-md-6 dc-chart">
         <div class="panel panel-green">
           <div class="panel-heading">
-            Hourly Energy / Demand
+            Hourly Energy & Peak Demand
           </div>
           <div class="panel-body">
             <div id='energy_hourly_chart' class='dc-chart'>
@@ -135,7 +135,7 @@
     </div>
 
       
-    <div class='row advanced'>
+    <div class='row advanced' style="display: none">
       <div class="col-md-6 dc-chart">
         <div class="panel panel-green">
           <div class="panel-heading">
@@ -154,7 +154,7 @@
       <div class="col-md-6 dc-chart">
           <div class="panel panel-green">
             <div class="panel-heading">
-              Demand Used
+              Peak Demand
             </div>
             <div class="panel-body">
               <div id='demand_chart' class='dc-chart'>
@@ -181,6 +181,8 @@
 </html>
 
 <script type="text/javascript" language="JavaScript">
-  $("#showHideAdvanced").click();
-    $("#showHideAdvanced").click();
+    
+  $('#showHideAdvanced').click (function() {
+   $('.advanced').toggle();   
+  })
 </script>
